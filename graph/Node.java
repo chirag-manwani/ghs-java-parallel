@@ -16,9 +16,9 @@ public class Node extends Thread {
 
     private ArrayList<Channel> channels;
 
-    private Channel testCh;
-    private Channel bestCh;
-    private Channel parent;
+    private Node testCh;
+    private Node bestCh;
+    private Node parent;
 
     private int recP;
     private LinkedBlockingQueue<Message> q;
@@ -107,7 +107,7 @@ public class Node extends Thread {
                 connect(m);
                 break;
             case INITITATE:
-                System.out.println("Initiate Message Received");
+                initiate(m);
                 break;
             case TEST:
                 System.out.println("Test Message Received");
@@ -183,7 +183,23 @@ public class Node extends Thread {
     }
 
     private void initiate(Message m) {
+        level = m.getLevel();
+        fID = m.getfID();
+        state = m.getState();
+        parent = m.getSender();
+        bestCh = null;
+        bestWeight = Integer.MAX_VALUE;
 
+        for (Channel c : channels) {
+            if (c.getStatus() == ChannelStatus.BRANCH && c.getNode() != parent) {
+                Message initM = new Message(MType.INITITATE, level, fID, state, this);
+                c.getNode().addMessage(initM);
+            }
+        }
+        if (state == NodeState.FIND) {
+            recP = 0;
+            test();
+        }
     }
 
     private void test(Message m) {
