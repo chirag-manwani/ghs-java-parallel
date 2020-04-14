@@ -18,14 +18,14 @@ public class Main {
             br = new BufferedReader(new FileReader(fileName));
             int numNodes = Integer.parseInt(br.readLine().strip());
 
-            for(int nodeID=0; nodeID < numNodes; nodeID++){
+            for (int nodeID = 0; nodeID < numNodes; nodeID++) {
                 Node node = new Node(nodeID);
                 nodes.add(node);
             }
 
             String line = null;
-            while((line = br.readLine()) != null) {
-                line = line.strip().substring(1, line.length()-1);
+            while ((line = br.readLine()) != null) {
+                line = line.strip().substring(1, line.length() - 1);
                 String parts[] = line.split(",");
 
                 int startNode = Integer.parseInt(parts[0].strip());
@@ -39,22 +39,21 @@ public class Main {
                 nodes.get(endNode).addChannel(c2);
             }
 
-        }
-        catch(FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("File not found. Quitting.");
             System.exit(1);
-        }
-        catch(IOException e) {
+        } catch (IOException e) {
             System.out.println("IOException occured. Quitting");
             System.exit(2);
-        }
-        finally {
+        } finally {
             try {
                 br.close();
-            }
-            catch(IOException e) {
+            } catch (IOException e) {
                 System.out.println("Error in Closing stream");
+                System.exit(3);
             }
         }
+
+        // Graph created successfully
     }
 }
