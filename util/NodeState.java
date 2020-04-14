@@ -1,5 +1,5 @@
 package util;
 
-public enum NodeStatus {
+public enum NodeState {
     NULL, SLEEP, FIND, FOUND
 }

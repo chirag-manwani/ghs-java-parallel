@@ -6,10 +6,10 @@ import java.util.concurrent.LinkedBlockingQueue;
 import util.ChannelStatus;
 import util.MType;
 import util.Message;
-import util.NodeStatus;
+import util.NodeState;
 
 public class Node extends Thread {
-    private NodeStatus status;
+    private NodeState state;
     private int fID;
     private int level;
     private int bestWeight;
@@ -29,7 +29,7 @@ public class Node extends Thread {
     */
 
     public Node() {
-        status = NodeStatus.NULL;
+        state = NodeState.NULL;
         fID = -1;
         level = -1;
         bestWeight = -1;
@@ -43,7 +43,7 @@ public class Node extends Thread {
 
     public Node(int fID) {
         this.fID = fID;
-        status = NodeStatus.SLEEP;
+        state = NodeState.SLEEP;
         level = 0;
         bestWeight = -1;
         channels = new ArrayList<>();
@@ -88,6 +88,15 @@ public class Node extends Thread {
         return bestChannel;
     }
 
+    private Channel getSenderChannel(Node sender) {
+        for (Channel c : channels) {
+            if(sender == c.getNode()) {
+                return c;
+            }
+        }
+        return null;
+    }
+
     private void processMessage(Message m) {
         MType mType = m.getType();
         switch(mType){
@@ -95,7 +104,7 @@ public class Node extends Thread {
                 wakeUp();
                 break;
             case CONNECT:
-                System.out.println("Connect Message Received");
+                connect(m);
                 break;
             case INITITATE:
                 System.out.println("Initiate Message Received");
@@ -143,7 +152,7 @@ public class Node extends Thread {
         Channel bestChannel = getBestChannel();
         bestChannel.setStatus(ChannelStatus.BRANCH);
         this.level = 0;
-        this.status = NodeStatus.FOUND;
+        this.state = NodeState.FOUND;
         this.recP = 0;
 
         Message m = new Message(MType.CONNECT, this.level, this);
@@ -152,16 +161,24 @@ public class Node extends Thread {
     }
 
     private void connect(Message m) {
-        if(this.status == NodeStatus.SLEEP) {
+        if (this.state == NodeState.SLEEP) {
             wakeUp();
         }
 
         int L = m.getLevel();
-
-
-
-        if(L < this.level) {
-
+        Node sender = m.getSender();
+        Channel sChannel = getSenderChannel(sender);
+        if (L < this.level) {
+            sChannel.setStatus(ChannelStatus.BRANCH);
+            Message initM = new Message(MType.INITITATE, this.level, this.fID, this.state, this);
+            sender.addMessage(initM);
+        }
+        else if (sChannel.getStatus() == ChannelStatus.BASIC) {
+            addMessage(m);
+        }
+        else {
+            Message initM = new Message(MType.INITITATE, this.level + 1, sChannel.getWeight(), NodeState.FIND, this);
+            sender.addMessage(initM);
         }
     }
 

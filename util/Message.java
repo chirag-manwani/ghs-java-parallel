@@ -8,14 +8,14 @@ public class Message {
     private int level;
     private int fID;
     private int w;
-    private NodeStatus state;
+    private NodeState state;
 
     public Message() {
-        this(MType.NULL, -1, -1, NodeStatus.NULL, null);
+        this(MType.NULL, -1, -1, NodeState.NULL, null);
     }
 
     public Message(MType type, Node sender) {
-        this(type, -1, -1, NodeStatus.NULL, sender);
+        this(type, -1, -1, NodeState.NULL, sender);
     }
 
     public Message(MType type, int levelOrWeight, Node sender) {
@@ -30,10 +30,10 @@ public class Message {
     }
 
     public Message(MType type, int level, int fID, Node sender) {
-        this(type, level, fID, NodeStatus.NULL, sender);
+        this(type, level, fID, NodeState.NULL, sender);
     }
 
-    public Message(MType type, int level, int fID, NodeStatus state, Node sender) {
+    public Message(MType type, int level, int fID, NodeState state, Node sender) {
         this.type = type;
         this.level = level;
         this.fID = fID;
@@ -53,7 +53,7 @@ public class Message {
         return fID;
     }
 
-    public NodeStatus getState() {
+    public NodeState getState() {
         return state;
     }
 
