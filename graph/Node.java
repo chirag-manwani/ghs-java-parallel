@@ -125,7 +125,7 @@ public class Node extends Thread {
                 report(m);
                 break;
             case CHANGEROOT:
-                changeroot(m);
+                changeroot();
                 break;
             default:
                 System.out.println("Improper message code");
@@ -305,11 +305,16 @@ public class Node extends Thread {
         }
     }
 
-    private void changeroot(Message m) {
-
-    }
-
     private void changeroot() {
-
+        Channel bChannel = getSenderChannel(bestCh);
+        if (bChannel.getStatus() == ChannelStatus.BRANCH) {
+            Message m = new Message(MType.CHANGEROOT, this);
+            bestCh.addMessage(m);
+        }
+        else {
+            Message m = new Message(MType.CONNECT, level, this);
+            bestCh.addMessage(m);
+            bChannel.setStatus(ChannelStatus.BRANCH);
+        }
     }
 }
