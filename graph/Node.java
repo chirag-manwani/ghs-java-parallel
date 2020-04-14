@@ -61,6 +61,16 @@ public class Node extends Thread {
         Helper Functions
     */
 
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("Neighours Node:" + fID + "\n-----------------\n");
+        buffer.append("NN\tweight\n");
+        for(Channel c : channels) {
+            buffer.append(c.getNode().fID + "\t" + c.getWeight() + "\n");
+        }
+        return buffer.toString();
+    }
+
     public void addChannel(Channel c) {
         if (c != null) {
             channels.add(c);
