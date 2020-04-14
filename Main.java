@@ -19,7 +19,7 @@ public class Main {
             int numNodes = Integer.parseInt(br.readLine().strip());
 
             for (int nodeID = 0; nodeID < numNodes; nodeID++) {
-                Node node = new Node(nodeID);
+                Node node = new Node(Integer.MAX_VALUE);
                 nodes.add(node);
             }
 

@@ -19,7 +19,7 @@ public class Channel {
         this.status = ChannelStatus.BASIC;
     }
 
-    public Node getN() {
+    public Node getNode() {
         return n;
     }
 

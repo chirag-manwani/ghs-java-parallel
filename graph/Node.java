@@ -3,13 +3,14 @@ package graph;
 import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import util.ChannelStatus;
 import util.MType;
 import util.Message;
 import util.NodeStatus;
 
 public class Node extends Thread {
     private NodeStatus status;
-    private int nodeID;
+    private int fID;
     private int level;
     private int bestWeight;
 
@@ -29,7 +30,7 @@ public class Node extends Thread {
 
     public Node() {
         status = NodeStatus.NULL;
-        nodeID = -1;
+        fID = -1;
         level = -1;
         bestWeight = -1;
         channels = null;
@@ -40,8 +41,8 @@ public class Node extends Thread {
         q = null;
     }
 
-    public Node(int nodeID) {
-        this.nodeID = nodeID;
+    public Node(int fID) {
+        this.fID = fID;
         status = NodeStatus.SLEEP;
         level = 0;
         bestWeight = -1;
@@ -71,11 +72,27 @@ public class Node extends Thread {
         }
     }
 
+    private Channel getBestChannel() {
+        Channel bestChannel = null;
+        int bestWeight = Integer.MAX_VALUE;
+
+        for(Channel c : channels) {
+            int cWeight = c.getWeight();
+
+            if(c.getStatus() == ChannelStatus.BASIC && cWeight < bestWeight) {
+                bestWeight = cWeight;
+                bestChannel = c;
+            }
+        }
+
+        return bestChannel;
+    }
+
     private void processMessage(Message m) {
         MType mType = m.getType();
         switch(mType){
             case WAKEUP:
-                System.out.println("Wakeup Message Received");
+                wakeUp();
                 break;
             case CONNECT:
                 System.out.println("Connect Message Received");
@@ -122,47 +139,65 @@ public class Node extends Thread {
     /*
         GHS Functions
     */
-    public void wakeUp() {
+    private void wakeUp() {
+        Channel bestChannel = getBestChannel();
+        bestChannel.setStatus(ChannelStatus.BRANCH);
+        this.level = 0;
+        this.status = NodeStatus.FOUND;
+        this.recP = 0;
+
+        Message m = new Message(MType.CONNECT, this.level, this);
+        Node recipient = bestChannel.getNode();
+        recipient.addMessage(m);
+    }
+
+    private void connect(Message m) {
+        if(this.status == NodeStatus.SLEEP) {
+            wakeUp();
+        }
+
+        int L = m.getLevel();
+
+
+
+        if(L < this.level) {
+
+        }
+    }
+
+    private void initiate(Message m) {
 
     }
 
-    public void connect(Message m) {
+    private void test(Message m) {
 
     }
 
-    public void initiate(Message m) {
+    private void test() {
 
     }
 
-    public void test(Message m) {
+    private void accept(Message m) {
 
     }
 
-    public void test() {
+    private void reject(Message m) {
 
     }
 
-    public void accept(Message m) {
+    private void report(Message m) {
 
     }
 
-    public void reject(Message m) {
+    private void report() {
 
     }
 
-    public void report(Message m) {
+    private void changeroot(Message m) {
 
     }
 
-    public void report() {
-
-    }
-
-    public void changeroot(Message m) {
-
-    }
-
-    public void changeroot() {
+    private void changeroot() {
 
     }
 }

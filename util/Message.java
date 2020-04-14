@@ -7,17 +7,33 @@ public class Message {
     private MType type;
     private int level;
     private int fID;
-    private int state;
+    private int w;
+    private NodeStatus state;
 
     public Message() {
-        sender = null;
-        type = MType.NULL;
-        level = -1;
-        fID = -1;
-        state = -1;
+        this(MType.NULL, -1, -1, NodeStatus.NULL, null);
     }
 
-    public Message(MType type, int level, int fID, int state, Node sender) {
+    public Message(MType type, Node sender) {
+        this(type, -1, -1, NodeStatus.NULL, sender);
+    }
+
+    public Message(MType type, int levelOrWeight, Node sender) {
+        this.type = type;
+        this.sender = sender;
+        if (type == MType.CONNECT) {
+            this.level = levelOrWeight;
+        }
+        else {
+            this.w = levelOrWeight;
+        }
+    }
+
+    public Message(MType type, int level, int fID, Node sender) {
+        this(type, level, fID, NodeStatus.NULL, sender);
+    }
+
+    public Message(MType type, int level, int fID, NodeStatus state, Node sender) {
         this.type = type;
         this.level = level;
         this.fID = fID;
@@ -37,11 +53,15 @@ public class Message {
         return fID;
     }
 
-    public int getState() {
+    public NodeStatus getState() {
         return state;
     }
 
     public Node getSender() {
         return sender;
+    }
+
+    public int getWeight() {
+        return w;
     }
 }
