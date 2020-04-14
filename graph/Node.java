@@ -23,6 +23,7 @@ public class Node extends Thread {
     private int recP;
     private LinkedBlockingQueue<Message> q;
 
+    private boolean stop;
 
     /*
         Node Constructor Functions
@@ -39,6 +40,7 @@ public class Node extends Thread {
         parent = null;
         recP = -1;
         q = null;
+        stop = false;
     }
 
     public Node(int fID) {
@@ -52,6 +54,7 @@ public class Node extends Thread {
         parent = null;
         recP = 0;
         q = new LinkedBlockingQueue<>();
+        stop = false;
     }
 
     /*
@@ -135,7 +138,7 @@ public class Node extends Thread {
     */
     @Override
     public void run() {
-        while (true) {
+        while (!stop) {
             try {
                 Message m = q.take();
                 processMessage(m);
@@ -264,11 +267,42 @@ public class Node extends Thread {
     }
 
     private void report(Message m) {
-
+        Node sender = m.getSender();
+        int weight = m.getWeight();
+        if (sender != parent) {
+            if (weight< bestWeight) {
+                bestWeight = weight;
+                bestCh = sender;
+            }
+            recP++;
+            report();
+        }
+        else {
+            if (state == NodeState.FIND) {
+                addMessage(m);
+            }
+            else if (weight > bestWeight){
+                changeroot();
+            }
+            else if(weight == bestWeight && bestWeight == Integer.MAX_VALUE) {
+                stop = true;
+            }
+        }
     }
 
     private void report() {
-
+        int branchCount = 0;
+        for(Channel c : channels) {
+            Node n = c.getNode();
+            if ((n != parent) && (c.getStatus() == ChannelStatus.BRANCH)) {
+                branchCount++;
+            }
+        }
+        if (recP == branchCount && testCh == null) {
+            state = NodeState.FOUND;
+            Message m = new Message(MType.REPORT, bestWeight, this);
+            parent.addMessage(m);
+        }
     }
 
     private void changeroot(Message m) {
