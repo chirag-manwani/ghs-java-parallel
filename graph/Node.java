@@ -113,16 +113,16 @@ public class Node extends Thread {
                 test(m);
                 break;
             case ACCEPT:
-                System.out.println("Accept Message Received");
+                accept(m);
                 break;
             case REJECT:
-                System.out.println("Reject Message Received");
+                reject(m);
                 break;
             case REPORT:
-                System.out.println("Report Message Received");
+                report(m);
                 break;
             case CHANGEROOT:
-                System.out.println("Changeroot Message Received");
+                changeroot(m);
                 break;
             default:
                 System.out.println("Improper message code");
@@ -245,11 +245,22 @@ public class Node extends Thread {
     }
 
     private void accept(Message m) {
-
+        testCh = null;
+        Node sender = m.getSender();
+        int weight = getSenderChannel(sender).getWeight();
+        if (weight < bestWeight) {
+            bestWeight = weight;
+            bestCh = sender;
+        }
+        report();
     }
 
     private void reject(Message m) {
-
+        Channel sChannel = getSenderChannel(m.getSender());
+        if (sChannel.getStatus() == ChannelStatus.BASIC) {
+            sChannel.setStatus(ChannelStatus.REJECT);
+            test();
+        }
     }
 
     private void report(Message m) {
