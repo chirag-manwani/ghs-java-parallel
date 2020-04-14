@@ -110,7 +110,7 @@ public class Node extends Thread {
                 initiate(m);
                 break;
             case TEST:
-                System.out.println("Test Message Received");
+                test(m);
                 break;
             case ACCEPT:
                 System.out.println("Accept Message Received");
@@ -203,11 +203,45 @@ public class Node extends Thread {
     }
 
     private void test(Message m) {
+        Node sender = m.getSender();
 
+        if (state == NodeState.SLEEP) {
+            wakeUp();
+        }
+
+        if (m.getLevel() > level) {
+            addMessage(m);
+        }
+        else if (m.getfID() != fID) {
+            Message accM = new Message(MType.ACCEPT, this);
+            sender.addMessage(accM);
+        }
+        else {
+            Channel sChannel = getSenderChannel(sender);
+            if (sChannel.getStatus() == ChannelStatus.BASIC) {
+                sChannel.setStatus(ChannelStatus.REJECT);
+            }
+            if (sender != testCh) {
+                Message rejM = new Message(MType.REJECT, this);
+                sender.addMessage(rejM);
+            }
+            else {
+                test();
+            }
+        }
     }
 
     private void test() {
-
+        Channel bestChannel = getBestChannel();
+        if (bestChannel == null) {
+            testCh = null;
+            report();
+        }
+        else {
+            testCh = bestChannel.getNode();
+            Message m = new Message(MType.TEST, level, fID, this);
+            testCh.addMessage(m);
+        }
     }
 
     private void accept(Message m) {
