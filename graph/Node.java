@@ -10,9 +10,11 @@ import util.NodeState;
 
 public class Node extends Thread {
     private NodeState state;
+
     private int fID;
     private int level;
     private int bestWeight;
+    private int recP;
 
     private ArrayList<Channel> channels;
 
@@ -20,7 +22,6 @@ public class Node extends Thread {
     private Node bestCh;
     private Node parent;
 
-    private int recP;
     private LinkedBlockingQueue<Message> q;
 
     private boolean stop;
@@ -30,17 +31,7 @@ public class Node extends Thread {
     */
 
     public Node() {
-        state = NodeState.NULL;
-        fID = -1;
-        level = -1;
-        bestWeight = -1;
-        channels = null;
-        testCh = null;
-        bestCh = null;
-        parent = null;
-        recP = -1;
-        q = null;
-        stop = false;
+        this(-1);
     }
 
     public Node(int fID) {
@@ -137,6 +128,10 @@ public class Node extends Thread {
             case CHANGEROOT:
                 changeroot();
                 break;
+            case STOP:
+                finish();
+                stop = true;
+                break;
             default:
                 System.out.println("Improper message code");
         }
@@ -161,6 +156,15 @@ public class Node extends Thread {
     /*
         GHS Functions
     */
+    private void finish() {
+        for(Channel c : channels) {
+            if (c.getStatus() == ChannelStatus.BRANCH) {
+                Message stopM = new Message(MType.STOP, this);
+                c.getNode().addMessage(stopM);
+            }
+        }
+    }
+
     private void wakeUp() {
         Channel bestChannel = getBestChannel();
         bestChannel.setStatus(ChannelStatus.BRANCH);
@@ -272,13 +276,14 @@ public class Node extends Thread {
         Channel sChannel = getSenderChannel(m.getSender());
         if (sChannel.getStatus() == ChannelStatus.BASIC) {
             sChannel.setStatus(ChannelStatus.REJECT);
-            test();
         }
+        test();
     }
 
     private void report(Message m) {
         Node sender = m.getSender();
         int weight = m.getWeight();
+
         if (sender != parent) {
             if (weight< bestWeight) {
                 bestWeight = weight;
@@ -295,6 +300,7 @@ public class Node extends Thread {
                 changeroot();
             }
             else if(weight == bestWeight && bestWeight == Integer.MAX_VALUE) {
+                finish();
                 stop = true;
             }
         }
