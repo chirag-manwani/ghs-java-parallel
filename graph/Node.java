@@ -1,6 +1,7 @@
 package graph;
 
 import java.util.ArrayList;
+import java.util.SortedSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import util.ChannelStatus;
@@ -26,16 +27,19 @@ public class Node extends Thread {
 
     private boolean stop;
 
+    private SortedSet<Integer> s;
+
     /*
         Node Constructor Functions
     */
 
     public Node() {
-        this(-1);
+        this(-1, null);
     }
 
-    public Node(int fID) {
+    public Node(int fID, SortedSet<Integer> s) {
         this.fID = fID;
+        this.s = s;
         state = NodeState.SLEEP;
         level = 0;
         bestWeight = -1;
@@ -51,6 +55,12 @@ public class Node extends Thread {
     /*
         Helper Functions
     */
+
+    private void addToSet(Channel c) {
+        synchronized(s) {
+            s.add(c.getWeight());
+        }
+    }
 
     public String toString() {
         StringBuffer buffer = new StringBuffer();
@@ -168,6 +178,9 @@ public class Node extends Thread {
     private void wakeUp() {
         Channel bestChannel = getBestChannel();
         bestChannel.setStatus(ChannelStatus.BRANCH);
+
+        addToSet(bestChannel);
+
         this.level = 0;
         this.state = NodeState.FOUND;
         this.recP = 0;
@@ -187,6 +200,7 @@ public class Node extends Thread {
         Channel sChannel = getSenderChannel(sender);
         if (L < this.level) {
             sChannel.setStatus(ChannelStatus.BRANCH);
+            addToSet(sChannel);
             Message initM = new Message(MType.INITITATE, this.level, this.fID, this.state, this);
             sender.addMessage(initM);
         }
@@ -331,6 +345,7 @@ public class Node extends Thread {
             Message m = new Message(MType.CONNECT, level, this);
             bestCh.addMessage(m);
             bChannel.setStatus(ChannelStatus.BRANCH);
+            addToSet(bChannel);
         }
     }
 }
