@@ -85,6 +85,11 @@ public class Main {
         for(Integer i : s) {
             System.out.println(m.get(i));
         }
+        int totalMessages = 0;
+        for(Node n : nodes) {
+            totalMessages += n.sMessages;
+        }
+        System.out.println(totalMessages);
     }
 }
 

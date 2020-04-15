@@ -29,6 +29,8 @@ public class Node extends Thread {
 
     private SortedSet<Integer> s;
 
+    public int sMessages = 0;
+
     /*
         Node Constructor Functions
     */
@@ -188,6 +190,7 @@ public class Node extends Thread {
         Message m = new Message(MType.CONNECT, this.level, this);
         Node recipient = bestChannel.getNode();
         recipient.addMessage(m);
+        sMessages++;
     }
 
     private void connect(Message m) {
@@ -203,6 +206,7 @@ public class Node extends Thread {
             addToSet(sChannel);
             Message initM = new Message(MType.INITITATE, this.level, this.fID, this.state, this);
             sender.addMessage(initM);
+            sMessages++;
         }
         else if (sChannel.getStatus() == ChannelStatus.BASIC) {
             addMessage(m);
@@ -210,6 +214,7 @@ public class Node extends Thread {
         else {
             Message initM = new Message(MType.INITITATE, this.level + 1, sChannel.getWeight(), NodeState.FIND, this);
             sender.addMessage(initM);
+            sMessages++;
         }
     }
 
@@ -225,6 +230,7 @@ public class Node extends Thread {
             if (c.getStatus() == ChannelStatus.BRANCH && c.getNode() != parent) {
                 Message initM = new Message(MType.INITITATE, level, fID, state, this);
                 c.getNode().addMessage(initM);
+                sMessages++;
             }
         }
         if (state == NodeState.FIND) {
@@ -246,6 +252,7 @@ public class Node extends Thread {
         else if (m.getfID() != fID) {
             Message accM = new Message(MType.ACCEPT, this);
             sender.addMessage(accM);
+            sMessages++;
         }
         else {
             Channel sChannel = getSenderChannel(sender);
@@ -255,6 +262,7 @@ public class Node extends Thread {
             if (sender != testCh) {
                 Message rejM = new Message(MType.REJECT, this);
                 sender.addMessage(rejM);
+                sMessages++;
             }
             else {
                 test();
@@ -272,6 +280,7 @@ public class Node extends Thread {
             testCh = bestChannel.getNode();
             Message m = new Message(MType.TEST, level, fID, this);
             testCh.addMessage(m);
+            sMessages++;
         }
     }
 
@@ -332,6 +341,7 @@ public class Node extends Thread {
             state = NodeState.FOUND;
             Message m = new Message(MType.REPORT, bestWeight, this);
             parent.addMessage(m);
+            sMessages++;
         }
     }
 
@@ -347,5 +357,6 @@ public class Node extends Thread {
             bChannel.setStatus(ChannelStatus.BRANCH);
             addToSet(bChannel);
         }
+        sMessages++;
     }
 }
